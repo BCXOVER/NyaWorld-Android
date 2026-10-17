@@ -2,7 +2,7 @@
 
 Экспериментальный Android-лаунчер для Minecraft Java **1.21.1** / **NeoForge 21.1.250** и сервера NyaWorld.
 
-> **Статус: первая проверка сборочной системы.** APK на этом этапе содержит **базовый лаунчер XDAetherium**, переименованный в *NyaWorld Build Test*. Он **ещё не умеет** устанавливать NyaWorld одним нажатием. Не распространять как готовый клиент сервера.
+> **Статус: экспериментальная Android-сборка.** На базе XDAetherium добавлен экран синхронизации NyaWorld. Он проверяет PC-манифест и по отдельному подтверждению скачивает файлы в `profiles/NyaWorld`. **Minecraft/NeoForge автоматически не устанавливаются, а моды Android не тестировались**. Не распространять как готовый клиент сервера.
 
 ## Цель проекта
 
@@ -14,7 +14,7 @@
 
 ## Что делает текущая сборка
 
-Workflow [Build Android test APK](.github/workflows/build-android.yml) клонирует официальный репозиторий [XDAetherium](https://github.com/Promastergame/XDAetherium) и собирает отладочный APK с тестовым названием NyaWorld. Это **инфраструктурный тест**, не релиз игровой сборки. Базовый движок и JAR-моды ещё не протестированы вместе.
+Workflow [Build Android test APK](.github/workflows/build-android.yml) клонирует [XDAetherium](https://github.com/Promastergame/XDAetherium), добавляет [`NyaWorldSyncActivity`](android/NyaWorldSyncActivity.java) и собирает тестовый APK. Он проверяет PC manifest.json и может по отдельному подтверждению загрузить изменённые файлы в профиль `profiles/NyaWorld`, но пока не настраивает автоматический запуск Minecraft/NeoForge или подключение к серверу. Состав модпака на Android не протестирован.
 
 1. Откройте **Actions** → **Build Android test APK**.
 2. Выберите **Run workflow**, если автоматический запуск ещё не состоялся.
@@ -33,4 +33,4 @@ Workflow [Build Android test APK](.github/workflows/build-android.yml) клон�
 
 Обязательно соблюдайте лицензии [XDAetherium](https://github.com/Promastergame/XDAetherium/blob/main/LICENSE) и включённых компонентов при распространении переработанного приложения. Следует публиковать применённые патчи и атрибуцию.
 
-_Эта стадия предназначена для проверки GitHub Actions, Android SDK, NDK и Gradle до интеграции NyaWorld._
+**Важно:** сначала используйте кнопку «ПРОВЕРИТЬ ОБНОВЛЕНИЯ», не «СКАЧАТЬ СБОРКУ», пока не готов тестировать 1+ ГБ Java-модов. Для игры в обычный Minecraft используйте «ОТКРЫТЬ ЛАУНЧЕР». Базовый APK из предыдущей успешной сборки рекомендуется сохранить до проверки новой версии.
