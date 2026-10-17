@@ -1,0 +1,16 @@
+name: Probe PC file downloads
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/probe-file-download.yml'
+      - 'scripts/probe_file_download.py'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/probe_file_download.py
