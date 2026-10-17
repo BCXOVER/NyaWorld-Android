@@ -1,0 +1,43 @@
+name: Build Android test APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Checkout XDAetherium engine
+        run: git clone --depth=1 --recurse-submodules --shallow-submodules https://github.com/Promastergame/XDAetherium.git engine
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK and NDK
+        run: |
+          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;27.3.13750724"
+      - name: Apply NyaWorld test branding
+        run: python3 scripts/brand_test.py engine
+      - name: Build test APK
+        run: |
+          cd engine
+          chmod +x gradlew
+          ./gradlew :app_pojavlauncher:assembleDebug --no-daemon --stacktrace
+      - name: Collect APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nyaworld-engine-test-apk
+          path: engine/app_pojavlauncher/build/outputs/apk/**/*.apk
+          if-no-files-found: error
