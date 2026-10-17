@@ -23,7 +23,7 @@ def main():
     files = root if isinstance(root,list) else None
     if isinstance(root,dict):
         result["root_fields"] = sorted(root.keys())
-        for key in ("version","revision","build","minecraftVersion","neoforgeVersion"):
+        for key in ("version","revision","build","updatedAt","loader","loaderVersion","minecraftVersion","neoforgeVersion","totalFiles","totalSize"):
             if key in root and isinstance(root[key],(str,int,float)):
                 result[key] = root[key]
         for key in ("files","Files","entries"):
@@ -33,10 +33,29 @@ def main():
                 break
     if isinstance(files,list):
         result["files_count"] = len(files)
+        prefixes={}
+        missing_sha=0
+        invalid_sha=0
         for entry in files:
-            if isinstance(entry,dict):
+            if not isinstance(entry,dict):
+                continue
+            if "sample_file_fields" not in result:
                 result["sample_file_fields"] = sorted(entry.keys())
-                break
+            path = entry.get("path","")
+            if isinstance(path,str):
+                normalized=path.replace("\\","/")
+                folder=normalized.split("/")[0].lower()
+                if "/" not in normalized:
+                    folder="(root JAR)" if path.lower().endswith(".jar") else "(root files)"
+                prefixes[folder] = prefixes.get(folder,0)+1
+            sha=entry.get("sha256")
+            if not sha:
+                missing_sha+=1
+            elif not (isinstance(sha,str) and len(sha)==64 and all(c in "0123456789abcdefABCDEF" for c in sha)):
+                invalid_sha+=1
+        result["file_root_counts"] = sorted(prefixes.items(),key=lambda x: -x[1])[:25]
+        result["missing_sha256"] = missing_sha
+        result["invalid_sha256"] = invalid_sha
     summary=json.dumps(result,ensure_ascii=False,indent=2)
     print(summary)
     path=os.environ.get("GITHUB_STEP_SUMMARY")
