@@ -22,11 +22,25 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
       - name: Install Android SDK and NDK
+        shell: bash
         run: |
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;27.3.13750724"
+          set -euo pipefail
+          # ubuntu-24.04 GitHub-hosted runners already provide Android command-line tools.
+          # Avoid android-actions/setup-android@v3: it attempts to install the
+          # deprecated "tools" package, failing with "Failed to find package 'tools'".
+          : "${ANDROID_HOME:?GitHub runner has no ANDROID_HOME}"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [[ ! -x "$SDKMANAGER" ]]; then
+            SDKMANAGER="$(command -v sdkmanager || true)"
+          fi
+          if [[ -z "$SDKMANAGER" || ! -x "$SDKMANAGER" ]]; then
+            echo "::error::Android sdkmanager is not present on runner"
+            exit 1
+          fi
+          echo "Using SDK manager: $SDKMANAGER"
+          (yes | "$SDKMANAGER" --licenses >/dev/null 2>&1) || true
+          "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0" "ndk;27.3.13750724"
       - name: Apply NyaWorld test branding
         run: python3 scripts/brand_test.py engine
       - name: Build test APK
